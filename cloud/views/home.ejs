@@ -1,0 +1,79 @@
+
+<!--This is the navigation/user bar-->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Austin Flood Warning System</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <div class="nav navbar-nav navbar-right navbar-text">
+                <% if (user != null) { %>
+                <span > Welcome, <%=user.username%>. </span>
+                <span ><a class="navbar-color" href="/logout"> Log Out</a></span>
+                <% } else { %>
+                <span ><a class="navbar-color" href="/login"> Log In</a></span>
+                <span ><a class="navbar-color" href="/signup">Sign Up</a></span>
+                <!--<span><button class="btn btn-success navbar-btn" onclick="document.location.href='/login';">Log In</button></span>
+                <span><button class="btn btn-success navbar-btn" onclick="document.location.href='/signup';">Sign Up</button></span>-->
+                <% }%>
+            </div>
+        </div><!--/.navbar-collapse -->
+    </div>
+</nav>
+
+<!--This displays the text inside navbar-->
+<% if (user != null) { %>
+    <%=user.username%>. You can
+
+    <a href="/logout"> log out</a>
+    <% } else { %>
+        Please <a href="/login">log in</a>
+    or <a href="/signup">sign up</a>
+    <% }%>
+<!--Some style for google map position and table collapse border-->
+<style type="text/css">
+    div#map-canvas {
+        margin: 0 auto 0 auto;
+        margin-top:50px;}
+    table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+    }
+</style>
+<!--Google Map div-->
+<div id="map-canvas"></div>
+<!--WaterLevel popout modal-->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Sensor History Data</h4>
+            </div>
+            <div class="modal-body">
+                <p>This should contain the history data of this sensor in X minutes increment.</p>
+
+                <table id="table-waterLevel">
+
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Add extra sensor/barricade information div-->
+
+<!--Google Map API&home.js src file-->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAWURDfsgwPTnZlW22HTkZF7mA9zLAHB2I"></script>
+<script type="text/javascript" src="/js/home.js"></script>
+

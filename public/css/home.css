@@ -1,0 +1,20 @@
+#map-canvas {
+    width: 1000px;
+    height: 800px;
+    background-color: #CCC;
+}
+
+.navbar-btn {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+.navbar-text {
+    vertical-align: middle;
+}
+.navbar-color {
+    color:#9d9d9d;
+}
+.table-waterLevel {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
