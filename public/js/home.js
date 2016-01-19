@@ -30,7 +30,7 @@ $(function(){
             /*pixelOffset: new google.maps.Size(0, 300)*/
         });
         var map = new google.maps.Map(document.getElementById('map-canvas'), {
-            center: new google.maps.LatLng(50, 30),
+            center: new google.maps.LatLng(30, 30),
             zoom: 8,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
