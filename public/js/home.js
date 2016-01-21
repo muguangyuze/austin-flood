@@ -6,25 +6,30 @@ var Sensor = Parse.Object.extend("Sensor");
 var sensors = [];
 var sensorMap = {};
 var WaterLevel = Parse.Object.extend("WaterLevel");
+var user = new Parse.User();
+var currentUser = Parse.User.current();
+var waterLevels = [];
+var waterLevelMap = {};
 /*query barricade information, initialize the map, and place all markers.
-While placing markers, infowindow contains information about the barricade and current status of sensors.
-More information about history data for specific sensor can be retrieved from a modal.*/
-$(function(){
-    var query = new Parse.Query(Barricade);
+ While placing markers, infowindow contains information about the barricade and current status of sensors.
+ More information about history data for specific sensor can be retrieved from a modal.*/
+$(function () {
+    var query = new Parse.Query(Sensor);
     query.find({
-        success: function(results) {
-            barricades = results;
+        success: function (results) {
+            sensors = results;
             for (var i = 0; i < results.length; i++) {
-                barricadesMap[results[i].id] = results[i];
+                sensorMap[results[i].id] = results[i];
             }
             initMap();
+
         },
-        error: function(error) {
+        error: function (error) {
             console.error(error);
         }
     });
 //This function initializes the map.
-    function initMap(){
+    function initMap() {
         var infoWindow = new google.maps.InfoWindow({
             maxWidth: 320
             /*pixelOffset: new google.maps.Size(0, 300)*/
@@ -34,51 +39,78 @@ $(function(){
             zoom: 8,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
-        for(var i = 0; i < barricades.length; i++) {
-            placeMarker(map, barricades[i], infoWindow);
+        for (var i = 0; i < sensors.length; i++) {
+            placeMarker(map, sensors[i], infoWindow);
         }
     }
+
 //This function places the markers on the map.
-    function placeMarker(map, barricade, infoWindow) {
-        var latLng = new google.maps.LatLng( barricade.get('location').latitude, barricade.get('location').longitude);
+    function placeMarker(map, sensor, infoWindow) {
+        var latLng = new google.maps.LatLng(sensor.get('location').latitude, sensor.get('location').longitude);
         var marker = new google.maps.Marker({
-            position : latLng,
-            map      : map
+            position: latLng,
+            map: map
         });
 //important, add a listener for click event.
-        google.maps.event.addListener(marker, 'click', function(){
-            var queryS = new Parse.Query(Sensor);
-            queryS.equalTo("barricadeId",barricade.id);
-            queryS.find({
-                success: function(results) {
-                    sensors = results;
+        google.maps.event.addListener(marker, 'click', function () {
+            var queryB = new Parse.Query(Barricade);
+            queryB.equalTo("sensorId", sensor.id);
+            queryB.find({
+                success: function (results) {
+                    barricades = results;
                     for (var i = 0; i < results.length; i++) {
-                        sensorMap[results[i].id] = results[i];
+                        barricadesMap[results[i].id] = results[i];
                     }
                     var sensorTable = "";
-                    for (var i = 0; i < sensors.length; i++) {
-                        sensorTable = sensorTable +  '<tr><td>'+sensors[i].id+'</td><td><button type="button" class="btn btn-info btn-sm" ' +
-                            'value= '+sensors[i].id+' onclick="historyDataToModal(this)">View Detail</button></td><td></tr>';
-                    }
-                    var contentString = '<div id="infoWindow">'+
-                        '<h1 id="infoWindowHeading">'+ barricade.id+ '</h1>'+
-                        '<div id="infoWindowBody">'+
-                        '<p>Barricade status: </p>'+ barricade.get('bStatus')+'<br>'
-                        +'<table id="mytable" class="table table-bordered">' +sensorTable +'</table>'
-                        +'<button onclick="myFunction()">Sensor List</button>'+
-                        '<button onclick="changeBarricadeStatus(this)" value='+ barricade.id + '>Change Barricade Status</button>'+
-                        '</div>'+
-                        '</div>';
-                    infoWindow.close(); // Close previously opened infowindow
-                    infoWindow.setContent(contentString);
-                    infoWindow.open(map, marker);
+                    var currentValue = 0;
+                    var queryW = new Parse.Query(WaterLevel);
+                    queryW.equalTo("sensorId", sensor.id);
+                    queryW.descending("createdAt");
+                    queryW.find({
+                        success: function (results) {
+                            waterLevels = results;
+
+                            if (results == null || results.length == 0) {
+                                sensorTable = '';
+                            }
+                            else {
+                                currentValue = results[0].get('waterLevel');
+                                sensorTable = sensorTable + '<td>' + currentValue + '</td><td><button type="button" class="btn btn-info btn-sm" ' +
+                                    'value= ' + sensor.id + ' onclick="historyDataToModal(this)">View History Data</button></td>';
+                            }
+                            var barricadeInfo = "";
+
+                            if (typeof(barricadesMap[sensor.id]) != "undefined") {
+                                var userExist = document.getElementById("userExist").innerHTML;
+                                barricadeInfo = '<p>Barricade status: </p>' + barricadesMap[sensor.id].get('bStatus') + '<br>'
+                                    + '<table id="mytable" class="table table-bordered">' + sensorTable + '</table>';
+                                if (userExist == "true") {
+                                    barricadeInfo = barricadeInfo
+                                        + '<button onclick="changeBarricadeStatus(this)" value=' + barricadesMap[sensor.id].id +
+                                        '>Change Barricade Status</button>';
+                                }
+                            }
+                            else {
+                                barricadeInfo = "There is no barricade at this location.";
+                            }
+                            var contentString = '<div id="infoWindow">' +
+                                '<h1 id="infoWindowHeading">' + sensor.id + '</h1>' +
+                                '<div id="infoWindowBody">' +
+                                barricadeInfo +
+                                '</div>' +
+                                '</div>';
+                            infoWindow.close(); // Close previously opened infowindow
+                            infoWindow.setContent(contentString);
+                            infoWindow.open(map, marker);
+                        }
+                    })
                 },
-                error: function(error) {
+                error: function (error) {
                     console.error(error);
                 }
             });
         });
-        google.maps.event.addListener(map, "click", function() {
+        google.maps.event.addListener(map, "click", function () {
             infoWindow.close();
         });
     }
@@ -90,9 +122,9 @@ function changeBarricadeStatus(btn) {
     var currentStatus = barricade.get('bStatus');
     barricade.set('bStatus', !currentStatus);
     barricade.save(null, {
-        success: function(barricade) {
+        success: function (barricade) {
         },
-        error: function(error) {
+        error: function (error) {
             console.error(error);
         }
     });
@@ -115,7 +147,7 @@ function historyDataToModal(btn) {
                 var waterLevel = waterLevels[i];
                 var currentWaterLevelStr = waterLevel.get('waterLevel').toString();
                 var timeStamp = waterLevel.createdAt;
-                waterTable = waterTable + '<tr><td>'+timeStamp+'</td>'+'<td>'+currentWaterLevelStr+'</td></tr>';
+                waterTable = waterTable + '<tr><td>' + timeStamp + '</td>' + '<td>' + currentWaterLevelStr + '</td></tr>';
             }
             document.getElementById("table-waterLevel").innerHTML = waterTable;
             $("#myModal").modal('show');

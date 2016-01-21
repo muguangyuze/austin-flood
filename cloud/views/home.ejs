@@ -16,9 +16,11 @@
                 <% if (user != null) { %>
                 <span > Welcome, <%=user.username%>. </span>
                 <span ><a class="navbar-color" href="/logout"> Log Out</a></span>
+                <div id="userExist" hidden>true</div>
                 <% } else { %>
                 <span ><a class="navbar-color" href="/login"> Log In</a></span>
                 <span ><a class="navbar-color" href="/signup">Sign Up</a></span>
+                <div id="userExist" hidden>false</div>
                 <!--<span><button class="btn btn-success navbar-btn" onclick="document.location.href='/login';">Log In</button></span>
                 <span><button class="btn btn-success navbar-btn" onclick="document.location.href='/signup';">Sign Up</button></span>-->
                 <% }%>
