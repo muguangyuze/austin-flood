@@ -50,7 +50,7 @@ exports.signup = function(req, res) {
 };
 
 exports.signupSubmit = function(req, res) {
-    Parse.User.signUp(req.body.username,req.body.password, {'email': req.body.email}).then(function() {
+    Parse.User.signUp(req.body.username,req.body.password, {'email': req.body.email,'phoneNumber': req.body.phone}).then(function() {
             Parse.User.logOut();
             res.redirect("/login");
         },

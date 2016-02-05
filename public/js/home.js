@@ -19,7 +19,7 @@ $(function () {
         success: function (results) {
             sensors = results;
             for (var i = 0; i < results.length; i++) {
-                sensorMap[results[i].id] = results[i];
+                sensorMap[results[i].get('sensorId')] = results[i];
             }
             initMap();
 
@@ -54,7 +54,7 @@ $(function () {
 //important, add a listener for click event.
         google.maps.event.addListener(marker, 'click', function () {
             var queryB = new Parse.Query(Barricade);
-            queryB.equalTo("sensorId", sensor.id);
+            queryB.equalTo("sensorId", sensor.get('sensorId'));
             queryB.find({
                 success: function (results) {
                     barricades = results;
@@ -64,7 +64,7 @@ $(function () {
                     var sensorTable = "";
                     var currentValue = 0;
                     var queryW = new Parse.Query(WaterLevel);
-                    queryW.equalTo("sensorId", sensor.id);
+                    queryW.equalTo("sensorId", sensor.get('sensorId'));
                     queryW.descending("createdAt");
                     queryW.find({
                         success: function (results) {
@@ -76,25 +76,31 @@ $(function () {
                             else {
                                 currentValue = results[0].get('waterLevel');
                                 sensorTable = sensorTable + '<td>' + currentValue + '</td><td><button type="button" class="btn btn-info btn-sm" ' +
-                                    'value= ' + sensor.id + ' onclick="historyDataToModal(this)">View History Data</button></td>';
+                                    'value= ' + sensor.get('sensorId') + ' onclick="historyDataToModal(this)">View History Data</button></td>'+ '<p></p>'+
+                                '<button id = "pushNotification" onclick="sendNotification()" type="button"'+
+                                'class="btn btn-info btn-sm" value=' + sensor.get('sensorId') +
+                                    ' >Send Notification</button>';
+                                //This contains the current waterlevel data,view history data button, and push notification feature.
                             }
                             var barricadeInfo = "";
 
-                            if (typeof(barricadesMap[sensor.id]) != "undefined") {
+
+                            if (typeof(barricadesMap[sensor.get('sensorId')]) != "undefined") {
                                 var userExist = document.getElementById("userExist").innerHTML;
-                                barricadeInfo = '<p>Barricade status: </p>' + barricadesMap[sensor.id].get('bStatus') + '<br>'
+                                barricadeInfo = '<p>Barricade status: </p>' + barricadesMap[sensor.get('sensorId')].get('bStatus') + '<br>'
                                     + '<table id="mytable" class="table table-bordered">' + sensorTable + '</table>';
                                 if (userExist == "true") {
                                     barricadeInfo = barricadeInfo
-                                        + '<button onclick="changeBarricadeStatus(this)" value=' + barricadesMap[sensor.id].id +
+                                        + '<button onclick="changeBarricadeStatus(this)" class="btn btn-info btn-sm" value=' + barricadesMap[sensor.get('sensorId')].id +
                                         '>Change Barricade Status</button>';
+                                        //This contains the barricade status change button and only viewable if a barricade is placed.
                                 }
                             }
                             else {
                                 barricadeInfo = "There is no barricade at this location.";
                             }
                             var contentString = '<div id="infoWindow">' +
-                                '<h1 id="infoWindowHeading">' + sensor.id + '</h1>' +
+                                '<h1 id="infoWindowHeading">' + sensor.get('sensorId') + '</h1>' +
                                 '<div id="infoWindowBody">' +
                                 barricadeInfo +
                                 '</div>' +
@@ -157,6 +163,47 @@ function historyDataToModal(btn) {
         }
     });
 }
+//This function is called from the add sensor button, will only invoke the modal/form.
+function addAnotherSensor(){
+    $("#addSensorModal").modal('show');
+}
+//This function is called from the submit button inside the modal. This will submit and register a new sensor form.
+function submitAnotherSensor(){
+    var sensor = new Sensor();
+    var sensorIdInput = document.getElementById("sensorIdInput").value;
+    var geoX = Number(document.getElementById("geoX").value);
+    var geoY = Number(document.getElementById("geoY").value);
+    var arduinoIdInput = document.getElementById("arduinoIdInput").value;
+    //var geoPoint = new Parse.GeoPoint({latitude:geoX, longitude:geoY});
 
-
+    sensor.save({
+        sensorId: sensorIdInput,
+        arduino: arduinoIdInput,
+        location: {
+            "__type": "GeoPoint",
+            "latitude": geoX,
+            "longitude": geoY
+        },
+        //location: geoPoint
+    }, {
+        success: function(gameScore) {
+            // The object was saved successfully.
+            alert('Save.')
+            window.location.reload();//This will reload the entire page. Not sure if this is the optimal plan.
+        },
+        error: function(gameScore, error) {
+            // The save failed.
+            // error is a Parse.Error with an error code and message.
+            alert('Did not save.')
+        }
+    });
+}
+function sendNotification() {
+    alert('here');
+    $.post("/sendSMS",
+        {message:"hahaha"},
+        function (data, status) {
+            alert("Data: " + data + "\nStatus: " + status);
+        });
+}
 
