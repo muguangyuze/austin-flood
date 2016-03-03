@@ -6,8 +6,8 @@ var router = require('cloud/routes/router.js');
 
 var parseExpressHttpsRedirect = require('parse-express-https-redirect');
 var parseExpressCookieSession = require('parse-express-cookie-session');
-var accountSid = 'ACf3ea843512294d9aaa7b8d786f8d8c87';
-var authToken = 'a03c723f349fa9b660cdba485c7abb6c';
+var accountSid = 'AC81afc6eaa961bf59a98a98bd48e09273';
+var authToken = '33ff5995d61529ce8cc13bafa0ba137b';
 var client = require('twilio')(accountSid, authToken);
 var app = express();
 //var twilioClient = require('cloud/twilioClient.js');
@@ -35,22 +35,24 @@ app.post('/login', router.loginSubmit);
 app.get('/signup', router.signup);
 app.post('/signup', router.signupSubmit);
 app.get('/logout', router.logout);
-app.post('/sendSMS',
+
+// This block is the post twilio text message.
+app.get('/test',router.test);
+app.post('/testsms',
     function(req, res) {
         client.sendSms({
-            to: "+19315320186",
-            from: "+15005550006",
-            body: 'Hello World from Twilio'
-        }, function(err, responseData) {
+                to: req.body.to,
+                from: "+19315320186",
+                body: req.body.message
+            }, function(err, responseData) {
                 if (err) {
-                    console.log(err);
+                    res.status(500).send({ error: 'something blew up in test sms' });
                 } else {
-                    console.log(responseData);
-                    //console.log(responseData.body);
+                    res.send(responseData);
                 }
+
             }
         );
-        res.send('Success');
     });
 /*app.get('/testtwilio', function(req, res){
     twilioClient.sendSms('hahahahaha');

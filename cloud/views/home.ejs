@@ -13,9 +13,10 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <div class="nav navbar-nav navbar-right navbar-text">
-                <span> <a class="navbar-color" href="#" onclick="addAnotherSensor()">Add New Sensor</a></span>
+
                 <% if (user != null) { %>
                 <span > Welcome, <%=user.username%>. </span>
+                <span> <a class="navbar-color" style='margin-right: 20px;' href="#" onclick="addAnotherSensor()">Add New Sensor</a></span>
                 <span ><a class="navbar-color" href="/logout"> Log Out</a></span>
                 <div id="userExist" hidden>true</div>
                 <% } else { %>
@@ -77,7 +78,7 @@
     </div>
 </div>
 <!--Add extra sensor/barricade information div-->
-<button type="button" class="btn btn-info btn-sm" style="float:right" id = "add" onclick="addAnotherSensor()">Add another sensor</button>
+
 <!--Modal for registering another sensor form-->
 <div id="addSensorModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -105,11 +106,18 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label  class="col-sm-2 control-label">Arduino ID</label>
+                        <label  class="col-sm-2 control-label">Location's Name</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="arduinoIdInput"/>
+                            <input type="text" class="form-control" id="placeNameInput"/>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Sensor Threshold Value</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="thresholdInput"/>
+                        </div>
+                    </div>
+
                     <!--<div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
 
@@ -117,6 +125,7 @@
                     </div>-->
                 </form>
             </div>
+
             <div class="modal-footer">
                 <button onclick="submitAnotherSensor()" type="button" class="btn btn-success">Submit</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

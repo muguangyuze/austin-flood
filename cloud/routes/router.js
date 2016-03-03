@@ -50,7 +50,7 @@ exports.signup = function(req, res) {
 };
 
 exports.signupSubmit = function(req, res) {
-    Parse.User.signUp(req.body.username,req.body.password, {'email': req.body.email,'phoneNumber': req.body.phone}).then(function() {
+    Parse.User.signUp(req.body.username,req.body.password, {'email': req.body.email,'phone': req.body.phone}).then(function() {
             Parse.User.logOut();
             res.redirect("/login");
         },
@@ -63,3 +63,12 @@ exports.logout = function(req, res) {
     Parse.User.logOut();
     res.redirect('/');
 };
+exports.test = function(req, res) {
+    var currentUser = Parse.User.current();
+    if (currentUser) {
+        res.render('test');
+    }
+    else {
+        res.render('test');
+    }
+}
