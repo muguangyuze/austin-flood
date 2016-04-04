@@ -18,7 +18,7 @@ Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
     queryT.equalTo("sensorId", request.object.get("sensorId"));
     queryT.first({
         success: function (sensor) {
-            if (request.object.get("waterLevel") >= sensor.get("thresholdLevel")) {
+            if (request.object.get("waterLevel") <= sensor.get("thresholdLevel")) {
 
                 infoOfLevel[sensor.get("placeName")] = request.object.get("waterLevel");
                 message = formatText(infoOfLevel);

@@ -15,6 +15,8 @@ var greenSensorList = [];
 var markerList = []; // a list of sensorId
 var markerMap ={};
 var message = "";
+var jsonObject;
+var Subscribe = Parse.Object.extend("Subscription");
 /*query barricade information, initialize the map, and place all markers.
  While placing markers, infowindow contains information about the barricade and current status of sensors.
  More information about history data for specific sensor can be retrieved from a modal.*/
@@ -119,6 +121,7 @@ $(function () {
                         success: function (results) {
                             waterLevels = results;
                             var notificationBtn = "";
+                            var subscribeBtn;
                             if (results == null || results.length == 0) {
                                 sensorTable = '';
                             }
@@ -126,11 +129,14 @@ $(function () {
                                 currentValue = results[0].get('waterLevel');
                                 sensorTable = sensorTable + '<td>' + currentValue + '</td><td><button type="button" class="btn btn-info btn-sm" ' +
                                     'value= ' + sensor.get('sensorId') + ' onclick="historyDataToModal(this)">View History Data</button></td>';
+                                subscribeBtn = '<button id = "subscribe" type="button" onclick="addNewSubscription(this)"'+
+                                    'class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
+                                    ' >Subcribe</button>';
                                 var userExistFirst = document.getElementById("userExist").innerHTML;
                                 if (userExistFirst == "true"){
                                     notificationBtn =
                                         '<button id = "pushNotification" onclick="getSensorInfo(this)" type="button"'+
-                                        'class="btn btn-info btn-sm" value=' + sensor.get('sensorId') +
+                                        'class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
                                         ' >Send Notification</button>';
                                 }
 
@@ -141,11 +147,11 @@ $(function () {
 
                             if (typeof(barricadesMap[sensor.get('sensorId')]) != "undefined") {
                                 var userExist = document.getElementById("userExist").innerHTML;
-                                barricadeInfo = '<p>Barricade Lowered: </p>' + barricadesMap[sensor.get('sensorId')].get('bStatus') + '<br>'
+                                barricadeInfo = '<p>Barricade Lowered:  ' + barricadesMap[sensor.get('sensorId')].get('bStatus') +'</p>' + '<br>'
                                     ;
                                 if (userExist == "true") {
                                     barricadeInfo = barricadeInfo
-                                        + '<button onclick="changeBarricadeStatus(this)" class="btn btn-info btn-sm" value=' + barricadesMap[sensor.get('sensorId')].get('sensorId') +
+                                        + '<button onclick="changeBarricadeStatus(this)" class="btn btn-link btn-sm" value=' + barricadesMap[sensor.get('sensorId')].get('sensorId') +
                                         '>Change Barricade Status</button>';
                                         //This contains the barricade status change button and only viewable if a barricade is placed.
                                 }
@@ -156,7 +162,7 @@ $(function () {
                             var contentString = '<div id="infoWindow">' +
                                 '<h1 id="infoWindowHeading">' + sensor.get('placeName') + '</h1>' +
                                 '<div id="infoWindowBody">' + '<table id="mytable" class="table table-bordered">' + sensorTable + '</table>'+
-                                barricadeInfo +'<br>' +notificationBtn +
+                                barricadeInfo +'<br>' +notificationBtn + '<br>' + subscribeBtn +
                                 '</div>' +
                                 '</div>';
                             infoWindow.close(); // Close previously opened infowindow
@@ -213,29 +219,121 @@ function historyDataToModal(btn) {
     queryW.find({
         success: function (results) {
             var waterLevels = results;
+            var downloadDataResult = waterLevels;
             var waterLevelsMap = {};
             for (var i = 0; i < results.length; i++) {
                 waterLevelsMap[results[i].id] = results[i];
             }
             var waterTable = "<tr><td>Update Time</td><td>WaterLevel</td></tr>";
-            for (var i = 0; i < 8; i++) {
+            for (var i = 0; i < waterLevels.length && i < 8; i++) {
                 //i < waterLevels.length
                 var waterLevel = waterLevels[i];
                 var currentWaterLevelStr = waterLevel.get('waterLevel').toString();
                 var timeStamp = waterLevel.createdAt;
                 waterTable = waterTable + '<tr><td>' + timeStamp + '</td>' + '<td>' + currentWaterLevelStr + '</td></tr>';
             }
+            var waterLevelPlot = [];
+            var timeStampPlot = [];
+            var sampleDataSet = [];
+            for (var i = 0; i < waterLevels.length; i++) {
+                 waterLevelPlot.push(waterLevels[i].get('waterLevel').toString());
+                 timeStampPlot.push(waterLevels[i].createdAt.toJSON());
+                //sample start
+                var sampleDataEntry = [];
+                var currentDate = waterLevels[i].createdAt;
+                sampleDataEntry.push(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(),
+                    currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()));
+                sampleDataEntry.push(waterLevels[i].get('waterLevel'));
+                sampleDataSet.push(sampleDataEntry);
+            }
+
+
+            $(function () {
+                $('#tester').highcharts({
+                    chart: {
+                        type: 'spline'
+                    },
+                    title: {
+                        text: 'History Data Plot'
+                    },
+
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: { // don't display the dummy year
+                            month: '%e. %b',
+                            year: '%b'
+                        },
+                        title: {
+                            text: 'Date'
+                        }
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Flood Level (cm)'
+                        }
+
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}</b><br>',
+                        pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+                    },
+
+                    plotOptions: {
+                        spline: {
+                            marker: {
+                                enabled: true
+                            }
+                        }
+                    },
+
+                    series: [{
+
+                        // Define the data points. All series have a dummy year
+                        // of 1970/71 in order to be compared on the same x axis. Note
+                        // that in JavaScript, months start at 0 for January, 1 for February etc.
+                        data: sampleDataSet
+                    }
+                    ]
+                });
+            });
+
             document.getElementById("table-waterLevel").innerHTML = waterTable;
             $("#myModal").modal('show');
+
+                    // Create Object
+            var items = downloadDataResult;
+
+
+                // Convert Object to JSON
+             jsonObject = JSON.stringify(items);
+
+
+                // Convert JSON to CSV & Display CSV
+            var csvObject = "text/csv;charset=utf-8," + encodeURIComponent(ConvertToCSV(jsonObject));
+
+
+
+
+            var data = "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(downloadDataResult));
+            document.getElementById("downloadDataDiv").innerHTML = '<a href="data:' + csvObject + '" download="HistoryData.csv" class="btn btn-success" >Download All History Data</a>';
+
+
         },
         error: function (error) {
             console.error(error);
         }
     });
 }
+
+function addNewVerification(){
+    $("#codeVerification").modal('show');
+}
 //This function is called from the add sensor button, will only invoke the modal/form.
 function addAnotherSensor(){
     $("#addSensorModal").modal('show');
+}
+function addAnotherBarricade(){
+    $("#addBarricadeModal").modal('show');
 }
 //This function is called from the submit button inside the modal. This will submit and register a new sensor form.
 function submitAnotherSensor(){
@@ -243,8 +341,8 @@ function submitAnotherSensor(){
     var sensorIdInput = document.getElementById("sensorIdInput").value;
     var geoX = Number(document.getElementById("geoX").value);
     var geoY = Number(document.getElementById("geoY").value);
-
-    var thresholdInput = Number(document.getElementById("thresholdInput").value);
+    var criticalInput = Number(document.getElementById("criticalInput"))
+    var warningInput = Number(document.getElementById("warningInput").value);
     var placeNameInput = document.getElementById("placeNameInput").value;
     //var geoPoint = new Parse.GeoPoint({latitude:geoX, longitude:geoY});
 
@@ -252,7 +350,8 @@ function submitAnotherSensor(){
         sensorId: sensorIdInput,
 
         placeName: placeNameInput,
-        thresholdLevel: thresholdInput,
+        criticalLevel: criticalInput,
+        warningLevel: warningInput,
         location: {
             "__type": "GeoPoint",
             "latitude": geoX,
@@ -262,13 +361,41 @@ function submitAnotherSensor(){
     }, {
         success: function(gameScore) {
             // The object was saved successfully.
-            alert('Save.');
+            alert('A new sensor is added to the system.');
             window.location.reload();//This will reload the entire page. Not sure if this is the optimal plan.
         },
         error: function(gameScore, error) {
             // The save failed.
             // error is a Parse.Error with an error code and message.
-            alert('Did not save.');
+            alert('Did not save. Please check the information you entered!');
+        }
+    });
+}
+function submitAnotherBarricade(){
+    var barricade = new Barricade();
+    var barricadeIdInput = document.getElementById("barricadeIdInput").value;
+
+
+
+    var correspondingSensorIdInput = document.getElementById("correspondingSensorIdInput").value;
+    //var geoPoint = new Parse.GeoPoint({latitude:geoX, longitude:geoY});
+
+    barricade.save({
+        arduinoIdBarricade: barricadeIdInput,
+        sensorId: correspondingSensorIdInput,
+        bStatus: true
+
+
+    }, {
+        success: function(gameScore) {
+            // The object was saved successfully.
+            alert('A new barricade is added to the system.');
+            window.location.reload();//This will reload the entire page. Not sure if this is the optimal plan.
+        },
+        error: function(gameScore, error) {
+            // The save failed.
+            // error is a Parse.Error with an error code and message.
+            alert('Did not save. Please check the information you entered!');
         }
     });
 }
@@ -326,3 +453,216 @@ function getSensorInfo (sensor) {
     });
 }
 
+function addNewSubscription(sensorId){
+    var sensor = document.getElementById("sensorId");
+    sensor.value = sensorId.value;
+
+    var id = sensorId.value;
+    var place = "";
+    var queryP = new Parse.Query(Sensor);
+    queryP.equalTo("sensorId", id);
+    queryP.first({
+        success: function (sensor) {
+            place = document.getElementById("sensorLoc");
+            place.value = sensor.get('placeName');
+        }
+    });
+    $("#addNewSubscription").modal('show');
+}
+
+function verifySubscription(){
+    var verifyCodeInput = document.getElementById("verifyCodeInput").value;
+    //console.log(verifyCodeInput);
+    var querySub = new Parse.Query(Subscribe);
+
+    if (verifyCodeInput.length < 4) {
+        alert('Please enter a valid verification code.');
+    } else {
+        querySub.equalTo("verificationCode", verifyCodeInput);
+        querySub.first({
+            success: function (result) {
+                if (result.get('isVerified') == true) {
+                    alert('You have already completed verification for this subscription');
+                } else {
+                    result.set('isVerified', true);
+                    result.save(null, {
+                        success: function (success) {
+                            console.log("here");
+                            alert('You have just verified your subscription.');
+                            window.location.reload();
+                        },
+                        error: function (result, error) {
+                            alert('Did not save.');
+                        }
+                    });
+                }
+            }
+        });
+    }
+}
+
+function sendVerificationCode() {
+    var subscribe = new Subscribe();
+    var sensorId = document.getElementById("sensorId").value;
+    var place = document.getElementById("sensorLoc").value;
+    var phoneNumInput = document.getElementById("phoneNumInput").value;
+    var codeNo = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    var response = grecaptcha.getResponse();
+
+    if(response.length == 0) {
+        document.getElementById('captcha').innerHTML="Please check the Captcha.";
+    } else {
+        var queryVer = new Parse.Query(Subscribe);
+        if (phoneNumInput.length < 10) {
+            alert('Please enter a valid phone number.');
+        } else {
+            queryVer.equalTo("phoneNumber", "+1" + phoneNumInput);
+            queryVer.equalTo("sensorId", sensorId);
+            queryVer.first({
+                success: function (exists) {
+                    if (typeof(exists) != "undefined") {
+                        alert('You have already subscribed for this sensor');
+                    } else {
+                        subscribe.save({
+                            sensorId: sensorId,
+                            phoneNumber: "+1" + phoneNumInput,
+                            verificationCode: codeNo.toString(),
+                            isVerified: false
+                        }, {
+                            success: function (result) {
+                                $.post("/testsms",
+                                    {
+                                        to: "+1" + phoneNumInput,
+                                        message: codeNo.toString()
+                                    },
+                                    function (err, data) {
+                                        alert('A verification code has been sent to your phone.');
+                                            window.location.reload();
+                                    });
+
+                            },
+                            error: function (result, error) {
+                                alert('Did not save.');
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+}
+// JSON to CSV Converter
+function ConvertToCSV(objArray) {
+    var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    var str = '';
+
+    for (var i = 0; i < array.length; i++) {
+        /*var line = '';
+        for (var index in array[i]) {
+            if (line != '') line += ','
+
+            line += array[i][index];
+        }
+
+        str += line + '\n ';*/
+        var title = 'Sensor Id'+','+'Water Level' +',' + 'Upload Time' +'\n';
+        var line = array[i]['sensorId']+','+array[i]['waterLevel']+','+array[i]['createdAt']+'\n';
+        str += line;
+    }
+    str = title + str;
+    return str;
+}
+/*function CSV(array) {
+    // Use first element to choose the keys and the order
+    var keys = Object.keys(array[0]);
+
+    // Build header
+    var result = keys.join("\t") + "\n";
+
+    // Add the rows
+    array.forEach(function(obj){
+        keys.forEach(function(k, ix){
+            if (ix) result += "\t";
+            result += obj[k];
+        });
+        result += "\n";
+    });
+
+    return result;
+}*/
+/*
+function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
+    //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+    var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+
+    var CSV = '';
+    //Set Report title in first row or line
+
+    CSV += ReportTitle + '\r\n\n';
+
+    //This condition will generate the Label/Header
+    if (ShowLabel) {
+        var row = "";
+
+        //This loop will extract the label from 1st index of on array
+        for (var index in arrData[0]) {
+
+            //Now convert each value to string and comma-seprated
+            row += index + ',';
+        }
+
+        row = row.slice(0, -1);
+
+        //append Label row with line break
+        CSV += row + '\r\n';
+    }
+
+    //1st loop is to extract each row
+    for (var i = 0; i < arrData.length; i++) {
+        var row = "";
+
+        //2nd loop will extract each column and convert it in string comma-seprated
+        for (var index in arrData[i]) {
+            row += '"' + arrData[i][index] + '",';
+        }
+
+        row.slice(0, row.length - 1);
+
+        //add a line break after each row
+        CSV += row + '\r\n';
+    }
+
+    if (CSV == '') {
+        alert("Invalid data");
+        return;
+    }
+
+    //Generate a file name
+    var fileName = "MyReport_";
+    //this will remove the blank-spaces from the title and replace it with an underscore
+    fileName += ReportTitle.replace(/ /g,"_");
+
+    //Initialize file format you want csv or xls
+    var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+
+    // Now the little tricky part.
+    // you can use either>> window.open(uri);
+    // but this will not work in some browsers
+    // or you will not get the correct file extension
+
+    //this trick will generate a temp <a /> tag
+    var link = document.createElement("a");
+    link.href = uri;
+
+    //set the visibility hidden so it will not effect on your web-layout
+    link.style = "visibility:hidden";
+    link.download = fileName + ".csv";
+
+    //this part will append the anchor tag and remove it after automatic click
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+$('historyDataDownloadBtn').click(function(){
+    JSONToCSVConvertor(jsonObject, "HistoryData", true);
+});*/

@@ -16,12 +16,14 @@
 
                 <% if (user != null) { %>
                 <span > Welcome, <%=user.username%>. </span>
+                <span> <a class="navbar-color" style='margin-right: 20px;' href="#" onclick="addAnotherBarricade()">Add New Barricade</a></span>
                 <span> <a class="navbar-color" style='margin-right: 20px;' href="#" onclick="addAnotherSensor()">Add New Sensor</a></span>
                 <span ><a class="navbar-color" href="/logout"> Log Out</a></span>
                 <div id="userExist" hidden>true</div>
                 <% } else { %>
+                <span> <a class="navbar-color" href="#" onclick="addNewVerification()">Verify Subscription</a></span>
                 <span ><a class="navbar-color" href="/login"> Log In</a></span>
-                <span ><a class="navbar-color" href="/signup">Sign Up</a></span>
+                <!--<span ><a class="navbar-color" href="/signup">Sign Up</a></span>-->
                 <div id="userExist" hidden>false</div>
                 <!--<span><button class="btn btn-success navbar-btn" onclick="document.location.href='/login';">Log In</button></span>
                 <span><button class="btn btn-success navbar-btn" onclick="document.location.href='/signup';">Sign Up</button></span>-->
@@ -54,6 +56,7 @@
 </style>
 <!--Google Map div-->
 <div id="map-canvas"></div>
+
 <!--WaterLevel popout modal-->
 <div id="myModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -70,8 +73,13 @@
                 <table id="table-waterLevel">
 
                 </table>
+                <div id="tester" style="width: 520px; height: 400px;"></div>
             </div>
+
             <div class="modal-footer">
+                <div id="downloadDataDiv"></div>
+                <!--<button id="historyDataDownloadBtn" class='gen_btn'>Generate File</button>-->
+                <!--<button id="downloadHistoryDataBtn" class="btn btn-success" >Download All History Data</button>-->
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -112,9 +120,15 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label  class="col-sm-2 control-label">Sensor Threshold Value</label>
+                        <label  class="col-sm-2 control-label">Sensor Critical Level Value</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="thresholdInput"/>
+                            <input type="text" class="form-control" id="criticalInput"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Sensor Warning Level Value</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="warningInput"/>
                         </div>
                     </div>
 
@@ -133,7 +147,158 @@
         </div>
     </div>
 </div>
+<!--Modal for add another barricade-->
+<div id="addBarricadeModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Please enter the following information to add another barricade.</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Barricade ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="barricadeIdInput"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Corresponding Sensor ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="correspondingSensorIdInput"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button onclick="submitAnotherBarricade()" type="button" class="btn btn-success">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal for subscribing to a sensor-->
+<div id="addNewSubscription" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" onclick="resetCaptcha()">&times;</button>
+                <h4 class="modal-title">Subscription for Text Alerts</h4>
+            </div>
+            <div class="modal-body">
+                <p>You have selected to subscribe for the following sensor: </p>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group" style="display:none">
+                        <label  class="col-sm-2 control-label">Sensor ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensorId" readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Sensor Location</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensorLoc" readonly/>
+                        </div>
+                    </div>
+                </form>
+                <p>Please enter your phone number to complete your subscription </p>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phoneNumInput"/>
+                        </div>
+                    </div>
+                </form>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <form action="" method="POST" >
+                                <div class="g-recaptcha" data-sitekey="6LfTNBsTAAAAAHjMTV0gG0VANs2IfAvE486yZFlH"></div>
+                                <span id="captcha" style="margin-left:100px;color:red" />
+                                <br>
+                            </form>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="sendVerificationCode()" type="button" class="btn btn-success">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="resetCaptcha()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal for verifying a phone number-->
+<div id="codeVerification" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Verifying Subscription</h4>
+            </div>
+            <div class="modal-body">
+                <p>A 4-digit verification code will be sent to you via text. Please enter a verification code to complete subscription: </p>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="verifyCodeInput"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="verifySubscription()" type="button" class="btn btn-success">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal for unsubscribing to a sensor-->
+<div id="removeSensorSubscription" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>Please enter your phone number to remove your subscription for the following sensor: </p>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group" style="display:none">
+                        <label  class="col-sm-2 control-label">Sensor ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensId" readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Sensor Location</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensLoc" readonly/>
+                        </div>
+                    </div>
+                </form>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phoneNumIn"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="removeSubscription()" type="button" class="btn btn-success">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!--Google Map API&home.js src file-->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAWURDfsgwPTnZlW22HTkZF7mA9zLAHB2I"></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script type="text/javascript" src="/js/home.js"></script>
 
