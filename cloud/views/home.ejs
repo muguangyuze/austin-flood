@@ -68,7 +68,7 @@
                 <h4 class="modal-title">Sensor History Data</h4>
             </div>
             <div class="modal-body">
-                <p>This should contain the history data of this sensor in X minutes increment.</p>
+                <p>The data is received every minute and this table contains the most recent data.</p>
 
                 <table id="table-waterLevel">
 
@@ -89,7 +89,7 @@
 
 <!--Modal for registering another sensor form-->
 <div id="addSensorModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
 
         <!-- Modal content-->
         <div class="modal-content">
@@ -102,7 +102,7 @@
                     <div class="form-group">
                         <label  class="col-sm-2 control-label">Sensor ID</label>
                         <div class="col-sm-10">
-                            <input type="text" class="form-control" id="sensorIdInput"/>
+                            <input type="text" class="form-control" id="sensorIdInput" placeholder="ID number on the Arduino"/>
                         </div>
                     </div>
                     <div class="form-group">
@@ -297,8 +297,52 @@
         </div>
     </div>
 </div>
+<!--Modal for unsubscribing to a sensor-->
+<div id="removeSensorSubscription" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>Please enter your phone number to remove your subscription for the following sensor: </p>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group" style="display:none">
+                        <label  class="col-sm-2 control-label">Sensor ID</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensId" readonly/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">Sensor Location</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="sensLoc" readonly/>
+                        </div>
+                    </div>
+                </form>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phoneNumIn"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="removeSubscription()" type="button" class="btn btn-success">Submit</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!--Google Map API&home.js src file-->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAWURDfsgwPTnZlW22HTkZF7mA9zLAHB2I"></script>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script type="text/javascript" src="/js/home.js"></script>
+<!--tooltip enable-->
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
