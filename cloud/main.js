@@ -46,8 +46,8 @@ Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
                                 success: function(users) {
                                     listOfNum = users;
 
-                                    sendAutoText(listOfNum, message, request.object.get("sensorId"));
-                                    sendPublicAlert(message, request.object.get("sensorId"), response);
+                                    //sendAutoText(listOfNum, message, request.object.get("sensorId"));
+                                    //sendPublicAlert(message, request.object.get("sensorId"), response);
                                     //response.error("reached critical.")
                                     //response.success();
                                     changeBarricadeStatus(request.object.get("sensorId"), true, response);
@@ -198,3 +198,50 @@ function sendAutoText(num, message, sensorId) {
         }
     });
 }
+
+
+
+Parse.Cloud.job("sensorStatusCheck", function(request, status) {
+    // Set up to modify user data
+    console.log('Status job preparing...');
+    Parse.Cloud.useMasterKey();
+    var counter = 0;
+    console.log('Status job still preparing...');
+    // Query for all users
+    var query = new Parse.Query(sensorTwilio);
+    console.log('Status job starting...');
+    query.each(function(sensor) {
+        var waterLevelQuery = new Parse.Query(levelTwilio);
+        console.log("Query sensor for id - " + sensor.get("sensorId"));
+        waterLevelQuery.equalTo("sensorId", sensor.get("sensorId"));
+        waterLevelQuery.descending("createdAt");
+        return waterLevelQuery.first(
+            {
+                success: function(waterLevel){
+                    if (waterLevel==null || typeof(waterLevel) == 'undefined') {
+                        return;
+                    }
+                    var timeDiff = Date.now() - waterLevel.createdAt.getTime();
+                    console.log("Query waterlevel for sensor " + sensor.get("sensorId") + " with time difference - " + timeDiff);
+                    if (timeDiff > 86400000){
+                        sensor.set('hasError', true);
+                    }
+                    if (counter % 100 === 0) {
+                        // Set the  job's progress status
+                        status.message(counter + " sensors processed.");
+                    }
+                    counter += 1;
+                    return sensor.save();
+                },
+                error: function(error) {
+                    console.log("Waterlevel query failing " + error);
+                }
+            });
+    }).then(function() {
+        // Set the job's success status
+        status.success("Status check completed successfully.");
+    }, function(error) {
+        // Set the job's error status
+        status.error("Sensor status check job ERROR.");
+    });
+});

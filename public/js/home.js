@@ -29,7 +29,7 @@ $(function () {
             for (var i = 0; i < results.length; i++) {
                 var len = results.length;
                 var sensorId = results[i].get('sensorId');
-                var threshold = results[i].get('thresholdLevel');
+                var threshold = results[i].get('criticalLevel');
                 var initMapNow = (i == results.length - 1);
                 sensors.push(results[i]);
                 sensorMap[sensorId] = results[i];
@@ -49,7 +49,7 @@ $(function () {
             success: function(wlResults) {
                 if (wlResults.length == 0
                     || wlResults[0].get('waterLevel') == 0
-                    || wlResults[0].get('waterLevel') >= threshold) {
+                    || wlResults[0].get('waterLevel') <= threshold) {
                     redSensorList.push(sensorId);
                     markerList.unshift(sensorId);
                 } else {
@@ -74,8 +74,8 @@ $(function () {
             /*pixelOffset: new google.maps.Size(0, 300)*/
         });
         var map = new google.maps.Map(document.getElementById('map-canvas'), {
-            center: new google.maps.LatLng(30, 30),
-            zoom: 8,
+            center: new google.maps.LatLng(30.36, -97.73),
+            zoom: 10,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
         for (var i = 0; i < markerList.length; i++) {
@@ -129,7 +129,7 @@ $(function () {
                             else {
                                 currentBatteryLevel = results[0].get('batteryLevel');
                                 currentValue = results[0].get('waterLevel');
-                                sensorTable = sensorTable +'Current water level Reading is: '+ currentValue + '<br><button type="button" class="btn btn-link btn-sm" ' +
+                                sensorTable = sensorTable +'Current water level Reading is: '+ currentValue + ' mm'+'<br><button type="button" class="btn btn-link btn-sm" ' +
                                     'value= ' + sensor.get('sensorId') + ' onclick="historyDataToModal(this)">View History Data</button>'+'<br>'
                                 ;
                                 subscribeBtn = '<button id = "subscribe" type="button" onclick="addNewSubscription(this)"'+
@@ -175,7 +175,7 @@ $(function () {
                                     }
                                     var contentString = '<div id="infoWindow">' +
                                         '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showError + '</h1>' +
-                                        '<div id="infoWindowBody">' + sensorTable + 
+                                        '<div id="infoWindowBody">' + sensorTable +
                                         barricadeInfo +'<br>' +notificationBtn + '<br>' + subscribeBtn + unsubscribeBtn +
                                         '</div>' +
                                         '</div>';
@@ -266,7 +266,7 @@ function historyDataToModal(btn) {
             for (var i = 0; i < results.length; i++) {
                 waterLevelsMap[results[i].id] = results[i];
             }
-            var waterTable = "<tr><td>Update Time</td><td>WaterLevel</td></tr>";
+            var waterTable = "<tr><td>Update Time</td><td>WaterLevel (mm)</td></tr>";
             for (var i = 0; i < waterLevels.length && i < 8; i++) {
                 //i < waterLevels.length
                 var waterLevel = waterLevels[i];
@@ -311,13 +311,13 @@ function historyDataToModal(btn) {
                     },
                     yAxis: {
                         title: {
-                            text: 'Flood Level (cm)'
+                            text: 'Flood Level (mm)'
                         }
 
                     },
                     tooltip: {
                         headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+                        pointFormat: '{point.x:%e. %b}: {point.y:.2f} mm'
                     },
 
                     plotOptions: {
