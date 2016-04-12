@@ -49,7 +49,8 @@ $(function () {
             success: function(wlResults) {
                 if (wlResults.length == 0
                     || wlResults[0].get('waterLevel') == 0
-                    || wlResults[0].get('waterLevel') <= threshold) {
+                    || wlResults[0].get('waterLevel') <= threshold
+                    || wlResults[0].get('hasError') == true) {
                     redSensorList.push(sensorId);
                     markerList.unshift(sensorId);
                 } else {
@@ -123,13 +124,14 @@ $(function () {
                             waterLevels = results;
                             var notificationBtn = "";
                             var subscribeBtn;
+                            var lockBarricadeStatusBtn = "";
                             if (results == null || results.length == 0) {
                                 sensorTable = '';
                             }
                             else {
                                 currentBatteryLevel = results[0].get('batteryLevel');
                                 currentValue = results[0].get('waterLevel');
-                                sensorTable = sensorTable +'Current water level Reading is: '+ currentValue + ' mm'+'<br><button type="button" class="btn btn-link btn-sm" ' +
+                                sensorTable = sensorTable +'Current Sensor Reading is: '+ currentValue + ' mm'+'<br><button type="button" class="btn btn-link btn-sm" ' +
                                     'value= ' + sensor.get('sensorId') + ' onclick="historyDataToModal(this)">View History Data</button>'+'<br>'
                                 ;
                                 subscribeBtn = '<button id = "subscribe" type="button" onclick="addNewSubscription(this)"'+
@@ -144,6 +146,9 @@ $(function () {
                                         '<button id = "pushNotification" onclick="getSensorInfo(this)" type="button"'+
                                         'class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
                                         ' >Send Notification</button>';
+                                    lockBarricadeStatusBtn =
+                                        '<button onclick="changeLockStatus(this)" class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
+                                        '>Lock/Unlock Barricade Status</button>';
                                 }
 
                                 //This contains the current waterlevel data,view history data button, and push notification feature.
@@ -169,21 +174,26 @@ $(function () {
                             queryS.equalTo("sensorId", sensor.get('sensorId'));
                             queryS.first({
                                 success: function (error) {
-                                    var showError =""
-                                    if (error.get('hasError') == true) {
-                                        showError = '<i class="material-icons" style="font-size:24px;color:red">warning</i>'
+                                    var showSensorError = "";
+                                    if (error.get('hasErrorOrFlood') == 1) {
+                                        showSensorError = '<i class="material-icons" style="font-size:24px;color:orange">warning</i>'
+                                    } else if (error.get('hasErrorOrFlood') == 2) {
+                                        showSensorError = '<i class="material-icons" style="font-size:24px;color:red">warning</i>'
                                     }
+                                    //else if (error.get('hasErrorOrFlood') == 3) {
+                                    //    showSensorError = '<i class="material-icons" style="font-size:24px;color:yellow">warning</i>'
+                                    //}
                                     var contentString = '<div id="infoWindow">' +
-                                        '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showError + '</h1>' +
+                                        '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showSensorError + '</h1>' +
                                         '<div id="infoWindowBody">' + sensorTable +
-                                        barricadeInfo +'<br>' +notificationBtn + '<br>' + subscribeBtn + unsubscribeBtn +
+                                        barricadeInfo + '<br>' +notificationBtn + '<br>' + subscribeBtn + unsubscribeBtn +
                                         '</div>' +
                                         '</div>';
                                     if (userExistFirst == "true"){
                                         contentString = '<div id="infoWindow">' +
-                                            '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showError +'</h1>' +
+                                            '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showSensorError +'</h1>' +
                                             '<div id="infoWindowBody">' + sensorTable +
-                                            barricadeInfo +'<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '<br>'+notificationBtn + '<br>' +
+                                            barricadeInfo + lockBarricadeStatusBtn + '<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '(V)' + '<br>'+notificationBtn + '<br>' +
                                             '</div>' +
                                             '</div>';
                                     };
@@ -192,23 +202,6 @@ $(function () {
                                     infoWindow.open(map, marker);
                                 }
                             });
-                            /*var contentString = '<div id="infoWindow">' +
-                                '<h1 id="infoWindowHeading">' + sensor.get('placeName') + '</h1>' +
-                                '<div id="infoWindowBody">' + '<table id="mytable" class="table table-bordered">' + sensorTable + '</table>'+
-                                barricadeInfo +'<br>' +notificationBtn + '<br>' + subscribeBtn + unsubscribeBtn +
-                                '</div>' +
-                                '</div>';
-                            if (userExistFirst == "true"){
-                                contentString = '<div id="infoWindow">' +
-                                    '<h1 id="infoWindowHeading">' + sensor.get('placeName') + '</h1>' +
-                                    '<div id="infoWindowBody">' + '<table id="mytable" class="table table-bordered">' + sensorTable + '</table>'+
-                                    barricadeInfo +'<br>' +notificationBtn + '<br>' +
-                                    '</div>' +
-                                    '</div>';
-                            }
-                            infoWindow.close(); // Close previously opened infowindow
-                            infoWindow.setContent(contentString);
-                            infoWindow.open(map, marker);*/
                         }
                     })
                 },
@@ -242,6 +235,7 @@ function changeBarricadeStatus(btn) {
                 barricadeUnderSameSensor.set('bStatus', !currentStatus);
                 barricadeUnderSameSensor.save(null, {
                     success: function (barricade) {
+                        alert('The barricade status has been changed, reopen the info-window to check!');
                     },
                     error: function (error) {
                         console.error(error);
@@ -250,6 +244,28 @@ function changeBarricadeStatus(btn) {
             }
         }
     })
+}
+function changeLockStatus(btn) {
+    var queryBB = new Parse.Query(Barricade);
+    queryBB.equalTo("sensorId",btn.value);
+    queryBB.first({
+        success:function(results){
+            if (results == undefined || typeof(results) == "undefined") {
+                return;
+            } else {
+                var currentStatus = results.get('overrideStatus');
+                results.set('overrideStatus', !currentStatus);
+                results.save(null, {
+                    success: function (barricade) {
+                        alert('The barricade is locked:' + results.get('overrideStatus'));
+                    },
+                    error: function (error) {
+                        console.error(error);
+                    }
+                });
+            }
+        }
+    });
 }
 //This function queries waterlevel data and send it to modal with a table format.
 function historyDataToModal(btn) {
@@ -266,7 +282,7 @@ function historyDataToModal(btn) {
             for (var i = 0; i < results.length; i++) {
                 waterLevelsMap[results[i].id] = results[i];
             }
-            var waterTable = "<tr><td>Update Time</td><td>WaterLevel (mm)</td></tr>";
+            var waterTable = "<tr><td>Update Time</td><td>Sensor Reading (mm)</td></tr>";
             for (var i = 0; i < waterLevels.length && i < 8; i++) {
                 //i < waterLevels.length
                 var waterLevel = waterLevels[i];
@@ -311,12 +327,12 @@ function historyDataToModal(btn) {
                     },
                     yAxis: {
                         title: {
-                            text: 'Flood Level (mm)'
+                            text: 'Sensor Reading (mm)'
                         }
 
                     },
                     tooltip: {
-                        headerFormat: '<b>{series.name}</b><br>',
+                        //headerFormat: '<b>{series.name}</b><br>',
                         pointFormat: '{point.x:%e. %b}: {point.y:.2f} mm'
                     },
 
@@ -383,9 +399,10 @@ function submitAnotherSensor(){
     var sensorIdInput = document.getElementById("sensorIdInput").value;
     var geoX = Number(document.getElementById("geoX").value);
     var geoY = Number(document.getElementById("geoY").value);
-    var criticalInput = Number(document.getElementById("criticalInput"))
+    var criticalInput = Number(document.getElementById("criticalInput").value);
     var warningInput = Number(document.getElementById("warningInput").value);
     var placeNameInput = document.getElementById("placeNameInput").value;
+    var errorDelta = Number(document.getElementById("deviationInput").value);
     //var geoPoint = new Parse.GeoPoint({latitude:geoX, longitude:geoY});
 
     sensor.save({
@@ -394,6 +411,7 @@ function submitAnotherSensor(){
         placeName: placeNameInput,
         criticalLevel: criticalInput,
         warningLevel: warningInput,
+        errorDelta: errorDelta,
         location: {
             "__type": "GeoPoint",
             "latitude": geoX,
@@ -425,9 +443,9 @@ function submitAnotherBarricade(){
     barricade.save({
         arduinoIdBarricade: barricadeIdInput,
         sensorId: correspondingSensorIdInput,
-        bStatus: true
-
-
+        bStatus: true,
+        overrideStatus: false,
+        //manualChangedAt: Date()
     }, {
         success: function(gameScore) {
             // The object was saved successfully.
@@ -441,19 +459,51 @@ function submitAnotherBarricade(){
         }
     });
 }
-function sendNotification(text) {
+function sendNotification(text, id) {
     var listOfNum = [];
     var queryN = new Parse.Query(Parse.User);
-    queryN.equalTo("phoneNumber", "+15103966032");
+    //queryN.equalTo("phoneNumber", "+15103966032");
     queryN.find({
         success: function (users) {
             listOfNum = users;
             //console.log(listOfNum.length);
-
             for (var i = 0; i < listOfNum.length; i++) {
+                //if (listOfNum[i] != undefined && typeof(listOfNum[i] != "undefined") && listOfNum[i].get('phoneNumber').length != 0){
+                    $.post("/testsms",
+                        {
+                            to: listOfNum[i].get('phoneNumber'),
+                            message: text//"Hello!"
+                        },
+                        function (err, data) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                console.log(data);
+                            }
+                        });
+                //}
+            }
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function sendPublicNotification (text, sensorId) {
+    var queryP = new Parse.Query(Subscribe);
+
+    queryP.equalTo("sensorId", sensorId);
+    queryP.equalTo("isVerified", true);
+    queryP.find({
+        success: function (public) {
+            listofPub = public;
+            //res.error("have the numbers");
+            for (var i = 0; i < listofPub.length; i++) {
+                //if (listofPub[i] != undefined && typeof(listofPub[i] != "undefined") && listofPub[i].get('phoneNumber').length != 0){
                 $.post("/testsms",
                     {
-                        to: listOfNum[i].get('phoneNumber'),
+                        to: listofPub[i].get('phoneNumber'),
                         message: text//"Hello!"
                     },
                     function (err, data) {
@@ -463,10 +513,9 @@ function sendNotification(text) {
                             console.log(data);
                         }
                     });
+                //}
             }
-        },
-        error: function (error) {
-            console.log(error);
+            alert("text sent out to all users");
         }
     });
 }
@@ -487,7 +536,8 @@ function getSensorInfo (sensor) {
                     console.log(info.get('waterLevel').toString());
                     message += info.get('waterLevel').toString();
                     console.log(message);
-                    sendNotification(message);
+                    sendNotification(message, sensor.value);
+                    sendPublicNotification(message, sensor.value);
                 }
             });
         }
@@ -611,7 +661,7 @@ function ConvertToCSV(objArray) {
 
         str += line + '\n ';*/
         var title = 'Sensor Id'+','+'Water Level' +',' + 'Upload Time' +'\n';
-        var line = array[i]['sensorId']+','+array[i]['waterLevel']+','+array[i]['createdAt']+'\n';
+        var line = Number(array[i]['sensorId'])+','+array[i]['waterLevel']+','+array[i]['createdAt']+'\n';
         str += line;
     }
     str = title + str;
@@ -661,4 +711,7 @@ function removeSubscription(){
             }
         });
     }
+}
+function resetCaptcha(){
+    grecaptcha.reset();
 }

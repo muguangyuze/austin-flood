@@ -20,7 +20,7 @@ function parseContents(locals) {
 
     if (matches != null) {
         matches.forEach(function(match) {
-            var name = match.split(contentPattern)[1]
+            var name = match.split(contentPattern)[1];
             locals[name] = split[i];
             i++;
         });

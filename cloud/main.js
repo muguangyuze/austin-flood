@@ -18,51 +18,105 @@ var message = '';
 Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
 
     var queryL = new Parse.Query(levelTwilio);
+    var change = 0;
 
     queryL.equalTo("sensorId", request.object.get("sensorId"));
-    queryL.equalTo("hasError", false);
+    queryL.notEqualTo("hasError", true);
     queryL.descending("createdAt");
     queryL.first({
         success: function (level) {
-            var change = Math.abs(request.object.get("waterLevel") - level.get('waterLevel'));
-            if (change > 100) {
-                //response.error(change.toString());
-                changeErrorStatus(request.object.get("sensorId"), true, response);
+            if (level == undefined || typeof(level) == "undefined") {
+                response.success();
             } else {
-                var queryT = new Parse.Query(sensorTwilio);
+                change = Math.abs(request.object.get("waterLevel") - level.get('waterLevel'));
 
-                queryT.equalTo("sensorId", request.object.get("sensorId"));
-                queryT.first({
-                    success: function (sensor) {
-                        //check for critical level then lower barricade and send text when barricade is removed
-                        if (request.object.get("waterLevel") <= sensor.get("criticalLevel")) {
+                var queryD = new Parse.Query(sensorTwilio);
 
-                            infoOfLevel[sensor.get("placeName")] = request.object.get("waterLevel");
-                            message = formatText(infoOfLevel);
+                queryD.equalTo("sensorId", request.object.get("sensorId"));
+                queryD.first({
+                    success: function(info) {
+                        if (change > info.get("errorDelta")) {
+                            //response.error(change.toString());
+                            //response.error(info.get("errorDelta").toString());
+                            //changeErrorStatus(request.object.get("sensorId"), true, response);
 
-                            var queryN = new Parse.Query(Parse.User);
-                            //queryN.equalTo("phoneNumber", "+19314228528");
-                            queryN.find({
-                                success: function(users) {
-                                    listOfNum = users;
+                            var queryTE = new Parse.Query(sensorTwilio);
 
-                                    //sendAutoText(listOfNum, message, request.object.get("sensorId"));
-                                    //sendPublicAlert(message, request.object.get("sensorId"), response);
-                                    //response.error("reached critical.")
-                                    //response.success();
-                                    changeBarricadeStatus(request.object.get("sensorId"), true, response);
+                            queryTE.equalTo("sensorId", request.object.get("sensorId"));
+                            queryTE.first({
+                                success: function (sensor) {
+                                    //check for critical level then lower barricade and send text when barricade is removed
+                                    //response.error("reached before critical in error." + request.object.get("waterLevel").toString() + sensor.get("criticalLevel").toString());
+                                    if (request.object.get("waterLevel") <= sensor.get("criticalLevel")) {
+
+                                        infoOfLevel[sensor.get("placeName")] = request.object.get("waterLevel");
+                                        message = formatText(infoOfLevel);
+
+                                        var queryNE = new Parse.Query(Parse.User);
+                                        //queryNE.equalTo("phoneNumber", "+19314228528");
+                                        queryNE.find({
+                                            success: function(users) {
+                                                listOfNum = users;
+
+                                                //sendAutoText(listOfNum, message, request.object.get("sensorId"));
+                                                //sendPublicAlert(message, request.object.get("sensorId"), response);
+                                                //response.error("reached critical in error.")
+                                                //response.success();
+                                                changeBarricadeStatus(request.object.get("sensorId"), true, 1, response);
+                                            }
+                                        });
+                                    }
+                                    //check for caution level then remove barricade when it's lowered
+                                    else if (request.object.get("waterLevel") >= sensor.get("warningLevel")) {
+                                        //response.error("here in error");
+                                        changeBarricadeStatus(request.object.get("sensorId"), false, 1, response);
+                                    }
+                                    else {
+                                        changeErrorStatus(request.object.get("sensorId"), 1, response);
+                                        //response.success();
+                                        //response.error("nothing happens in error");
+                                    }
                                 }
                             });
-                        }
-                        //check for caution level then remove barricade when it's lowered
-                        else if (request.object.get("waterLevel") >= sensor.get("warningLevel")) {
-                            //response.error("here");
-                            changeBarricadeStatus(request.object.get("sensorId"), false, response);
-                        }
-                        else {
-                            changeErrorStatus(request.object.get("sensorId"), false, response);
-                            //response.success();
-                            //response.error("nothing happens");
+
+                        } else {
+                            var queryT = new Parse.Query(sensorTwilio);
+
+                            queryT.equalTo("sensorId", request.object.get("sensorId"));
+                            queryT.first({
+                                success: function (sensor) {
+                                    //check for critical level then lower barricade and send text when barricade is removed
+                                    if (request.object.get("waterLevel") <= sensor.get("criticalLevel")) {
+
+                                        infoOfLevel[sensor.get("placeName")] = request.object.get("waterLevel");
+                                        message = formatText(infoOfLevel);
+
+                                        var queryN = new Parse.Query(Parse.User);
+                                        //queryN.equalTo("phoneNumber", "+19314228528");
+                                        queryN.find({
+                                            success: function(users) {
+                                                listOfNum = users;
+
+                                                sendAutoText(listOfNum, message, request.object.get("sensorId"));
+                                                sendPublicAlert(message, request.object.get("sensorId"), response);
+                                                //response.error("reached critical.")
+                                                //response.success();
+                                                changeBarricadeStatus(request.object.get("sensorId"), true, 3, response);
+                                            }
+                                        });
+                                    }
+                                    //check for caution level then remove barricade when it's lowered
+                                    else if (request.object.get("waterLevel") >= sensor.get("warningLevel")) {
+                                        //response.error("here");
+                                        changeBarricadeStatus(request.object.get("sensorId"), false, 0, response);
+                                    }
+                                    else {
+                                        changeErrorStatus(request.object.get("sensorId"), 0, response);
+                                        //response.success();
+                                        //response.error("nothing happens");
+                                    }
+                                }
+                            });
                         }
                     }
                 });
@@ -71,14 +125,13 @@ Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
     });
 });
 
-
 function changeErrorStatus (id, status, res) {
     var queryStat = new Parse.Query(sensorTwilio);
 
     queryStat.equalTo("sensorId", id);
     queryStat.first({
         success: function (sensorTwilio) {
-            sensorTwilio.set("hasError", status);
+            sensorTwilio.set("hasErrorOrFlood", status);
             sensorTwilio.save();
             //res.error(status+"change error");
             res.success();
@@ -86,62 +139,84 @@ function changeErrorStatus (id, status, res) {
     });
 }
 
-function changeBarricadeStatus (id, state, res) {
+function changeBarricadeStatus (id, state, sensor, res) {
     var queryB1 = new Parse.Query(barricadeTwilio);
+    var queryS1 = new Parse.Query(sensorTwilio);
     var time_now = Date.now();
 
     queryB1.equalTo("sensorId", id);
     queryB1.first({
         success: function (barricade) {
+            if (barricade == undefined || typeof(barricade) == "undefined") {
+                res.success();
+            }
             // check if 10 minutes have passed since updating barricade manually
-            var statusChangedAt = barricade.get("manualChangedAt").getTime();
-            var min_passed = Math.round((time_now - statusChangedAt)/(1000*60));
+            //var statusChangedAt = barricade.get("manualChangedAt").getTime();
+            //var min_passed = Math.round((time_now - statusChangedAt)/(1000*60));
             //res.error(min_passed.toString());
             //res.error(state.toString());
-
-            // only change barricade when its state is the opposite of the the given status and if it hasn't been changed manually
-            if (barricade.get("bStatus") != state && min_passed >= 10) {
-                barricade.save(null, {
-                    success: function (status) {
-                        status.set("bStatus", state);
-                        status.save();
-                        //res.success();
-                        //res.error(state + "change barricade");
-                        changeErrorStatus(id, false, res);
-                    }
-                });
-            } else {
-                changeErrorStatus(id, false, res);
+            else {
+                // only change barricade when its state is the opposite of the the given status and if it hasn't been changed manually
+                if (barricade.get("bStatus") != state && barricade.get("overrideStatus") == false) {
+                    barricade.save(null, {
+                        success: function (status) {
+                            status.set("bStatus", state);
+                            status.save();
+                            //res.success();
+                            //res.error(state + "change barricade");
+                            changeErrorStatus(id, sensor, res);
+                        }
+                    });
+                } else {
+                    changeErrorStatus(id, sensor, res);
+                }
             }
         }
     });
 }
 
 Parse.Cloud.afterSave("WaterLevel", function(request) {
-    var query = new Parse.Query(levelTwilio);
     var queryF = new Parse.Query(levelTwilio);
+    var query = new Parse.Query(levelTwilio);
+    var queryC = new Parse.Query(sensorTwilio);
 
     queryF.equalTo("sensorId", request.object.get("sensorId"));
-    queryF.equalTo("hasError", false);
+    queryF.notEqualTo("hasError", true);
     queryF.descending("createdAt");
     queryF.find({
         success: function(results) {
-            listofLevel = results;
-            var change = Math.abs(request.object.get("waterLevel") - listofLevel[0].get("waterLevel"));
-            if (change > 100) {
-                query.get(request.object.id,{
-                    success:function(flag){
-                        flag.set("hasError", true);
-                        //flag.set("waterLevel", change);
+            if (results == undefined || typeof(results) == "undefined") {
+                query.get(request.object.id, {
+                    success: function (flag) {
+                        flag.set("hasError", undefined);
                         flag.save();
                     }
                 });
             } else {
-                query.get(request.object.id,{
-                    success:function(flag){
-                        flag.set("hasError", false);
-                        //flag.set("waterLevel", change);
-                        flag.save();
+                listofLevel = results;
+                var change = Math.abs(request.object.get("waterLevel") - listofLevel[1].get("waterLevel"));
+
+                queryC.equalTo("sensorId", request.object.get("sensorId"));
+                queryC.first({
+                    success: function(sensor){
+
+                        if (change > sensor.get("errorDelta")) {
+                            query.get(request.object.id,{
+                                success:function(flag){
+                                    flag.set("hasError", true);
+                                    //flag.set("waterLevel", change);
+                                    flag.save();
+                                }
+                            });
+                        } else {
+                            query.get(request.object.id,{
+                                success:function(flag){
+                                    flag.set("hasError", false);
+                                    //flag.set("waterLevel", change);
+                                    flag.save();
+                                }
+                            });
+                        }
                     }
                 });
             }
@@ -170,15 +245,17 @@ function formatText (floodedSensors) {
         return '[This is a test] ALERT! Currently there are no flash floods.';
     }
 
-    var message = '[This is a test] ALERT! The water level went pass the threshold for the following sensor(s): \n';
+    var message = '[This is a test] ALERT! There is a flash flood in the \n';
     for (var key in floodedSensors) {
-        message += key.toString() + ': ' + floodedSensors[key].toString() + '\n';
+        message += key.toString() + '\n';
     }
 
     return message;
 }
 
-function sendAutoText(num, message, sensorId) {
+function sendAutoText(num, message, sensorId, res) {
+    //var queryP = new Parse.Query(publicTwilio);
+    var queryS = new Parse.Query(sensorTwilio);
     var queryB = new Parse.Query(barricadeTwilio);
     //res.error(num[0].get('phoneNumber'));
     queryB.equalTo("sensorId", sensorId);
@@ -186,6 +263,7 @@ function sendAutoText(num, message, sensorId) {
         success: function (status) {
             if (status.get('bStatus') == false) {
                 for (var i = 0; i < num.length; i++) {
+                    //if (num[i] != undefined && typeof(num[i] != "undefined") && num[i].get('phoneNumber').length != 0){
                     client.sendSms({
                         to: num[i].get('phoneNumber'),
                         from: '+19315320186',
@@ -193,13 +271,32 @@ function sendAutoText(num, message, sensorId) {
                     }, function(error, data) {
                         //res.error("success");
                     });
+                    //}
                 }
+            }
+            else if (status == undefined || typeof(status) == "undefined") {
+                queryS.equalTo("sensorId", id);
+                queryS.first({
+                    success: function (sensor) {
+                        if (sensor.get('hasErrorOrFlood') != 3 || sensor.get('hasErrorOrFlood') != 1) {
+                            for (var i = 0; i < num.length; i++) {
+                                //if (num[i] != undefined && typeof(num[i] != "undefined") && num[i].get('phoneNumber').length != 0){
+                                client.sendSms({
+                                    to: num[i].get('phoneNumber'),
+                                    from: '+19315320186',
+                                    body: message
+                                }, function(error, data) {
+                                    //res.error("success");
+                                });
+                                //}
+                            }
+                        }
+                    }
+                });
             }
         }
     });
 }
-
-
 
 Parse.Cloud.job("sensorStatusCheck", function(request, status) {
     // Set up to modify user data
@@ -223,8 +320,8 @@ Parse.Cloud.job("sensorStatusCheck", function(request, status) {
                     }
                     var timeDiff = Date.now() - waterLevel.createdAt.getTime();
                     console.log("Query waterlevel for sensor " + sensor.get("sensorId") + " with time difference - " + timeDiff);
-                    if (timeDiff > 86400000){
-                        sensor.set('hasError', true);
+                    if (timeDiff > 880000){
+                        sensor.set('hasErrorOrFlood', 2); //time interval is smaller than 15 mins for system delays
                     }
                     if (counter % 100 === 0) {
                         // Set the  job's progress status
