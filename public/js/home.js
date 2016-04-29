@@ -34,6 +34,7 @@ $(function () {
                 sensors.push(results[i]);
                 sensorMap[sensorId] = results[i];
                 queryWaterLevelForSensor(sensorId, threshold, len);
+                console.log(redSensorList);
             }
         },
         error: function (error) {
@@ -47,20 +48,28 @@ $(function () {
         queryWaterLevel.descending("createdAt");
         queryWaterLevel.find({
             success: function(wlResults) {
-                if (wlResults.length == 0
-                    || wlResults[0].get('waterLevel') == 0
-                    || wlResults[0].get('waterLevel') <= threshold
-                    || wlResults[0].get('hasError') == true) {
-                    redSensorList.push(sensorId);
-                    markerList.unshift(sensorId);
-                } else {
-                    greenSensorList.push(sensorId);
-                    markerList.push(sensorId);
+                var querySensor = new Parse.Query(Sensor);
+                querySensor.equalTo("sensorId", sensorId);
+                querySensor.find({
+                    success: function (sensorResults){
+                        if (wlResults.length == 0
+                            || wlResults[0].get('waterLevel') == 0
+                            || wlResults[0].get('waterLevel') <= threshold
+                            || wlResults[0].get('hasError') == true || sensorResults[0].get('hasError') == true) {
+                            redSensorList.push(sensorId);
+                            markerList.unshift(sensorId);
+                        } else {
+                            greenSensorList.push(sensorId);
+                            markerList.push(sensorId);
 
-                }
-                if (markerList.length == len) {
-                    initMap();
-                }
+                        }
+                        if (markerList.length == len) {
+                            initMap();
+                        }
+                    }
+
+                })
+
             },
             error: function (error) {
                 console.error(error);
@@ -131,7 +140,7 @@ $(function () {
                             else {
                                 currentBatteryLevel = results[0].get('batteryLevel');
                                 currentValue = results[0].get('waterLevel');
-                                sensorTable = sensorTable +'Current Sensor Reading is: '+ currentValue + ' mm'+'<br><button type="button" class="btn btn-link btn-sm" ' +
+                                sensorTable = sensorTable +'Current Sensor Reading is: '+ (currentValue*0.00328).toFixed(2) + ' ft'+'<br><button type="button" class="btn btn-link btn-sm" ' +
                                     'value= ' + sensor.get('sensorId') + ' onclick="historyDataToModal(this)">View History Data</button>'+'<br>'
                                 ;
                                 subscribeBtn = '<button id = "subscribe" type="button" onclick="addNewSubscription(this)"'+
@@ -145,26 +154,51 @@ $(function () {
                                     notificationBtn =
                                         '<button id = "pushNotification" onclick="getSensorInfo(this)" type="button"'+
                                         'class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
-                                        ' >Send Notification</button>';
+                                        ' >Send Notification to all subscribed users</button>';
                                     lockBarricadeStatusBtn =
                                         '<button onclick="changeLockStatus(this)" class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
-                                        '>Lock/Unlock Barricade Status</button>';
+                                        '>Switch between manual and automatic mode</button>';
                                 }
 
                                 //This contains the current waterlevel data,view history data button, and push notification feature.
                             }
                             var barricadeInfo = "";
 
-
+                            var barricadeStatusinString;
+                            if (barricadesMap[sensor.get('sensorId')].get('bStatus') == false){
+                                barricadeStatusinString = 'open';
+                            }
+                            else {
+                                barricadeStatusinString = 'closed';
+                            }
+                            var lockStatusinString;
+                            if (barricadesMap[sensor.get('sensorId')].get('overrideStatus') == false){
+                                lockStatusinString = 'in automatic mode.';
+                            }
+                            else {
+                                lockStatusinString = 'in manual mode.';
+                            }
                             if (typeof(barricadesMap[sensor.get('sensorId')]) != "undefined") {
                                 var userExist = document.getElementById("userExist").innerHTML;
-                                barricadeInfo = 'Barricade Lowered:  ' + barricadesMap[sensor.get('sensorId')].get('bStatus')+'<br>'
+                                barricadeInfo = 'The barricade is currently ' + barricadeStatusinString+'<br>'
                                     ;
                                 if (userExist == "true") {
                                     barricadeInfo = barricadeInfo
                                         + '<button onclick="changeBarricadeStatus(this)" class="btn btn-link btn-sm" value=' + barricadesMap[sensor.get('sensorId')].get('sensorId') +
-                                        '>Change Barricade Status</button>';
+                                        '>Change Barricade Status</button><br>';
                                         //This contains the barricade status change button and only viewable if a barricade is placed.
+                                    var setValue = barricadesMap[sensor.get('sensorId')].get('sensorId');
+                                    var lockBarricadeStatusBtn ='';
+                                    if (barricadesMap[sensor.get('sensorId')].get('overrideStatus')) {
+                                        lockBarricadeStatusBtn =
+                                            '<form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" checked value=' + setValue + '> Manual ' +
+                                            '<input type="radio" name="status" onclick="changeLockStatus(this)" id="false" value=' + setValue + '> Automatic </form>';
+                                    } else {
+                                        lockBarricadeStatusBtn =
+                                            '<form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" value=' + setValue + '> Manual' +
+                                            '<input type="radio" name="status" onclick="changeLockStatus(this)" id="false" checked value=' + setValue + '> Automatic </form>';
+
+                                    }
                                 }
                             }
                             else {
@@ -193,7 +227,7 @@ $(function () {
                                         contentString = '<div id="infoWindow">' +
                                             '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showSensorError +'</h1>' +
                                             '<div id="infoWindowBody">' + sensorTable +
-                                            barricadeInfo + lockBarricadeStatusBtn + '<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '(V)' + '<br>'+notificationBtn + '<br>' +
+                                            barricadeInfo + 'The barricade is currently ' + lockStatusinString + '<br>'+ lockBarricadeStatusBtn + '<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '(V)' + '<br>'+notificationBtn + '<br>' +
                                             '</div>' +
                                             '</div>';
                                     };
@@ -247,22 +281,26 @@ function changeBarricadeStatus(btn) {
 }
 function changeLockStatus(btn) {
     var queryBB = new Parse.Query(Barricade);
+    var updateStatus = btn.id;
     queryBB.equalTo("sensorId",btn.value);
     queryBB.first({
         success:function(results){
             if (results == undefined || typeof(results) == "undefined") {
                 return;
             } else {
+                console.log(btn.value.toString());
                 var currentStatus = results.get('overrideStatus');
-                results.set('overrideStatus', !currentStatus);
-                results.save(null, {
-                    success: function (barricade) {
-                        alert('The barricade is locked:' + results.get('overrideStatus'));
-                    },
-                    error: function (error) {
-                        console.error(error);
-                    }
-                });
+                if (updateStatus.toString() != currentStatus.toString()) {
+                    results.set('overrideStatus', !currentStatus);
+                    results.save(null, {
+                        success: function (barricade) {
+                            //alert('The barricade is locked:' + results.get('overrideStatus'));
+                        },
+                        error: function (error) {
+                            console.error(error);
+                        }
+                    });
+                }
             }
         }
     });
@@ -272,88 +310,161 @@ function historyDataToModal(btn) {
     console.log("here");
     var sensorId = btn.value;
     var queryW = new Parse.Query(WaterLevel);
+
     queryW.equalTo("sensorId", sensorId);
     queryW.descending("createdAt");
+    queryW.limit(1000);
     queryW.find({
         success: function (results) {
+
             var waterLevels = results;
             var downloadDataResult = waterLevels;
             var waterLevelsMap = {};
             for (var i = 0; i < results.length; i++) {
                 waterLevelsMap[results[i].id] = results[i];
             }
-            var waterTable = "<tr><td>Update Time</td><td>Sensor Reading (mm)</td></tr>";
+            var waterTable = "<tr><td>Update Time</td><td>Sensor Reading (mm)</td><td>Sensor Reading (ft)</td></tr>";
             for (var i = 0; i < waterLevels.length && i < 8; i++) {
                 //i < waterLevels.length
                 var waterLevel = waterLevels[i];
                 var currentWaterLevelStr = waterLevel.get('waterLevel').toString();
-                var timeStamp = waterLevel.createdAt;
-                waterTable = waterTable + '<tr><td>' + timeStamp + '</td>' + '<td>' + currentWaterLevelStr + '</td></tr>';
+                var timeStamp = waterLevel.createdAt.toLocaleString();
+                waterTable = waterTable + '<tr><td>' + timeStamp + '</td>' + '<td>' + currentWaterLevelStr
+                    +'</td><td>'+ (Number(currentWaterLevelStr)*0.00328).toFixed(2); + '</td></tr>';
             }
-            var waterLevelPlot = [];
-            var timeStampPlot = [];
-            var sampleDataSet = [];
-            for (var i = 0; i < waterLevels.length; i++) {
-                 waterLevelPlot.push(waterLevels[i].get('waterLevel').toString());
-                 timeStampPlot.push(waterLevels[i].createdAt.toJSON());
-                //sample start
-                var sampleDataEntry = [];
-                var currentDate = waterLevels[i].createdAt;
-                sampleDataEntry.push(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(),
-                    currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()));
-                sampleDataEntry.push(waterLevels[i].get('waterLevel'));
-                sampleDataSet.push(sampleDataEntry);
-            }
+            var queryName = new Parse.Query(Sensor);
+            queryName.equalTo("sensorId",sensorId);
+            queryName.find({
+                success: function (results){
+                    var name = results[0].get('placeName');
+                    var criticalLevelInPlot = results[0].get('criticalLevel');
+                    document.getElementById("historyDataTitle").innerHTML = name;
+                    waterTable = waterTable + name;
+                    //console.log(results);
+                    console.log(name);
+                    var waterLevelPlot = [];
+                    var timeStampPlot = [];
+                    var sampleDataSet = [];
+                    var criticalDataSet = [];
+
+                    for (var i = 0; (i < waterLevels.length)&&(i<1440); i++) {
+                        waterLevelPlot.push(waterLevels[i].get('waterLevel').toString());
+                        timeStampPlot.push(waterLevels[i].createdAt.toJSON());
+                        //sample start
+                        var criticalDataEntry = [];
+                        var sampleDataEntry = [];
+                        var currentDate = waterLevels[i].createdAt;
+                        sampleDataEntry.push(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(),
+                            currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()));
+                        sampleDataEntry.push(waterLevels[i].get('waterLevel'));
+                        sampleDataSet.push(sampleDataEntry);
+
+                        criticalDataEntry.push(Date.UTC(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate(),
+                            currentDate.getUTCHours(), currentDate.getUTCMinutes(), currentDate.getUTCSeconds()));
+                        criticalDataEntry.push(criticalLevelInPlot);
+                        criticalDataSet.push(criticalDataEntry);
 
 
-            $(function () {
-                $('#tester').highcharts({
-                    chart: {
-                        type: 'spline'
-                    },
-                    title: {
-                        text: 'History Data Plot'
-                    },
 
-                    xAxis: {
-                        type: 'datetime',
-                        dateTimeLabelFormats: { // don't display the dummy year
-                            month: '%e. %b',
-                            year: '%b'
-                        },
-                        title: {
-                            text: 'Date'
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'Sensor Reading (mm)'
-                        }
-
-                    },
-                    tooltip: {
-                        //headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '{point.x:%e. %b}: {point.y:.2f} mm'
-                    },
-
-                    plotOptions: {
-                        spline: {
-                            marker: {
-                                enabled: true
-                            }
-                        }
-                    },
-
-                    series: [{
-
-                        // Define the data points. All series have a dummy year
-                        // of 1970/71 in order to be compared on the same x axis. Note
-                        // that in JavaScript, months start at 0 for January, 1 for February etc.
-                        data: sampleDataSet
                     }
-                    ]
-                });
+                    $(function () {
+                        Highcharts.setOptions({
+                            global: {
+                                useUTC: false
+                            }
+                        });
+                        $('#tester').highcharts({
+                            chart: {
+                                type: 'spline'
+                            },
+                            title: {
+                                text: name
+                            },
+
+                            xAxis: {
+                                type: 'datetime',
+                                dateTimeLabelFormats: {
+                                    //second: '%Y-%m-%d<br/>%H:%M:%S',
+                                    minute: '%Y-%m-%d<br/>%H:%M',
+                                    //hour: '%Y-%m-%d<br/>%H:%M',
+                                    //day: '%Y<br/>%m-%d',
+                                    //week: '%Y<br/>%m-%d',
+                                    //month: '%Y-%m',
+                                    //year: '%Y'
+                                },
+                                title: {
+                                    text: 'Date'
+                                }
+                            },
+                            yAxis: {
+                                reversed: true,
+                                title: {
+                                    text: 'Sensor Reading (mm)'
+                                }
+
+                            },
+                            tooltip: {
+                                type: 'datetime',
+                                //headerFormat: '<b>{series.name}</b><br>',
+                                //pointFormat: '{point.x:%e. %b}: {point.y:.2f} mm',
+                                dateTimeLabelFormats: {
+                                    //second: '%Y-%m-%d<br/>%H:%M:%S',
+                                    //second:"%A, %b %e, %H:%M:%S",
+                                    minute:"%A, %b %e, %H:%M"
+                                },
+
+                            },
+                            /*tooltip: {
+
+                            },*/
+
+                            /*plotOptions: {
+                                spline: {
+                                    marker: {
+                                        enabled: true
+                                    }
+                                }
+                            },*/
+                            plotOptions: {
+                                spline: {
+                                    lineWidth: 4,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 5
+                                        }
+                                    },
+                                    marker: {
+                                        enabled: false
+                                    },
+                                }
+                            },
+
+                            series: [{
+                                name: 'Sensor Reading (mm)',
+                                // Define the data points. All series have a dummy year
+                                // of 1970/71 in order to be compared on the same x axis. Note
+                                // that in JavaScript, months start at 0 for January, 1 for February etc.
+                                data: sampleDataSet
+                            },
+                                {
+                                    name: 'Critical Level (mm)',
+                                    data:criticalDataSet,
+                                    dashStyle: 'longdash'
+                                }
+                            ]
+                        });
+                    });
+
+                },
+                error: function (error) {
+                    console.error(error);
+                }
+
             });
+
+
+
+
 
             document.getElementById("table-waterLevel").innerHTML = waterTable;
             $("#myModal").modal('show');
@@ -715,3 +826,6 @@ function removeSubscription(){
 function resetCaptcha(){
     grecaptcha.reset();
 }
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});

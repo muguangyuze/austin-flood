@@ -58,8 +58,6 @@ Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
                                             success: function(users) {
                                                 listOfNum = users;
 
-                                                //sendAutoText(listOfNum, message, request.object.get("sensorId"));
-                                                //sendPublicAlert(message, request.object.get("sensorId"), response);
                                                 //response.error("reached critical in error.")
                                                 //response.success();
                                                 changeBarricadeStatus(request.object.get("sensorId"), true, 1, response);
@@ -97,8 +95,8 @@ Parse.Cloud.beforeSave("WaterLevel", function(request, response) {
                                             success: function(users) {
                                                 listOfNum = users;
 
-                                                sendAutoText(listOfNum, message, request.object.get("sensorId"));
-                                                sendPublicAlert(message, request.object.get("sensorId"), response);
+                                                //sendAutoText(listOfNum, message, request.object.get("sensorId"));
+                                                //sendPublicAlert(message, request.object.get("sensorId"), response);
                                                 //response.error("reached critical.")
                                                 //response.success();
                                                 changeBarricadeStatus(request.object.get("sensorId"), true, 3, response);
@@ -180,8 +178,8 @@ Parse.Cloud.afterSave("WaterLevel", function(request) {
     var query = new Parse.Query(levelTwilio);
     var queryC = new Parse.Query(sensorTwilio);
 
-    queryF.equalTo("sensorId", request.object.get("sensorId"));
     queryF.notEqualTo("hasError", true);
+    queryF.equalTo("sensorId", request.object.get("sensorId"));
     queryF.descending("createdAt");
     queryF.find({
         success: function(results) {
@@ -194,29 +192,23 @@ Parse.Cloud.afterSave("WaterLevel", function(request) {
                 });
             } else {
                 listofLevel = results;
+                var currentReading = listofLevel[0];
                 var change = Math.abs(request.object.get("waterLevel") - listofLevel[1].get("waterLevel"));
 
                 queryC.equalTo("sensorId", request.object.get("sensorId"));
                 queryC.first({
                     success: function(sensor){
-
-                        if (change > sensor.get("errorDelta")) {
+                        var errorRange = sensor.get("errorDelta");
+                        if (change > errorRange) {
                             query.get(request.object.id,{
                                 success:function(flag){
                                     flag.set("hasError", true);
-                                    //flag.set("waterLevel", change);
-                                    flag.save();
-                                }
-                            });
-                        } else {
-                            query.get(request.object.id,{
-                                success:function(flag){
-                                    flag.set("hasError", false);
-                                    //flag.set("waterLevel", change);
                                     flag.save();
                                 }
                             });
                         }
+                    }, error : function(error) {
+                        alert("there was an querying for errorDelta in afterSave!");
                     }
                 });
             }
