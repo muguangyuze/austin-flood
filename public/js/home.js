@@ -155,9 +155,6 @@ $(function () {
                                         '<button id = "pushNotification" onclick="getSensorInfo(this)" type="button"'+
                                         'class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
                                         ' >Send Notification to all subscribed users</button>';
-                                    lockBarricadeStatusBtn =
-                                        '<button onclick="changeLockStatus(this)" class="btn btn-link btn-sm" value=' + sensor.get('sensorId') +
-                                        '>Switch between manual and automatic mode</button>';
                                 }
 
                                 //This contains the current waterlevel data,view history data button, and push notification feature.
@@ -165,23 +162,20 @@ $(function () {
                             var barricadeInfo = "";
 
                             var barricadeStatusinString;
-                            if (barricadesMap[sensor.get('sensorId')].get('bStatus') == false){
+                            var currentBarricade = barricadesMap[sensor.get('sensorId')];
+                            if (typeof(currentBarricade) == 'undefined' || currentBarricade == null) {
+                                barricadeStatusinString = 'not registered';
+
+                            } else if (currentBarricade.get('bStatus') == false){
                                 barricadeStatusinString = 'open';
                             }
                             else {
                                 barricadeStatusinString = 'closed';
                             }
-                            var lockStatusinString;
-                            if (barricadesMap[sensor.get('sensorId')].get('overrideStatus') == false){
-                                lockStatusinString = 'in automatic mode.';
-                            }
-                            else {
-                                lockStatusinString = 'in manual mode.';
-                            }
+
                             if (typeof(barricadesMap[sensor.get('sensorId')]) != "undefined") {
                                 var userExist = document.getElementById("userExist").innerHTML;
-                                barricadeInfo = 'The barricade is currently ' + barricadeStatusinString+'<br>'
-                                    ;
+                                barricadeInfo = 'The barricade is currently ' + barricadeStatusinString+'<br>';
                                 if (userExist == "true") {
                                     barricadeInfo = barricadeInfo
                                         + '<button onclick="changeBarricadeStatus(this)" class="btn btn-link btn-sm" value=' + barricadesMap[sensor.get('sensorId')].get('sensorId') +
@@ -189,13 +183,13 @@ $(function () {
                                         //This contains the barricade status change button and only viewable if a barricade is placed.
                                     var setValue = barricadesMap[sensor.get('sensorId')].get('sensorId');
                                     var lockBarricadeStatusBtn ='';
-                                    if (barricadesMap[sensor.get('sensorId')].get('overrideStatus')) {
+                                    if (barricadesMap[sensor.get('sensorId')].get('overrideStatus')||barricadesMap[sensor.get('sensorId')].get('overrideStatus') == undefined ) {
                                         lockBarricadeStatusBtn =
-                                            '<form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" checked value=' + setValue + '> Manual ' +
+                                            '<p>This barricade is currently operating in</p><br><form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" checked value=' + setValue + '> Manual ' +
                                             '<input type="radio" name="status" onclick="changeLockStatus(this)" id="false" value=' + setValue + '> Automatic </form>';
                                     } else {
                                         lockBarricadeStatusBtn =
-                                            '<form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" value=' + setValue + '> Manual' +
+                                            '<p>This barricade is currently operating in</p><form> <input type="radio" name="status" onclick="changeLockStatus(this)" id="true" value=' + setValue + '> Manual' +
                                             '<input type="radio" name="status" onclick="changeLockStatus(this)" id="false" checked value=' + setValue + '> Automatic </form>';
 
                                     }
@@ -227,7 +221,7 @@ $(function () {
                                         contentString = '<div id="infoWindow">' +
                                             '<h1 id="infoWindowHeading">' + sensor.get('placeName') + showSensorError +'</h1>' +
                                             '<div id="infoWindowBody">' + sensorTable +
-                                            barricadeInfo + 'The barricade is currently ' + lockStatusinString + '<br>'+ lockBarricadeStatusBtn + '<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '(V)' + '<br>'+notificationBtn + '<br>' +
+                                            barricadeInfo   +lockBarricadeStatusBtn + '<br>' + 'Current Battery Level is: ' + currentBatteryLevel + '(V)' + '<br>'+notificationBtn + '<br>' +
                                             '</div>' +
                                             '</div>';
                                     };

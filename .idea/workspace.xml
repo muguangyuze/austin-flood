@@ -87,7 +87,7 @@
         <entry file="file://$PROJECT_DIR$/cloud/main.js">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="265" column="23" selection-start-line="265" selection-start-column="23" selection-end-line="265" selection-end-column="23" />
+              <caret line="189" column="36" selection-start-line="189" selection-start-column="36" selection-end-line="189" selection-end-column="36" />
               <folding>
                 <element signature="e#15063#15164#0" expanded="false" />
               </folding>
@@ -98,17 +98,17 @@
       <file leaf-file-name="home.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/public/js/home.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5969101">
-              <caret line="58" column="57" selection-start-line="58" selection-start-column="57" selection-end-line="58" selection-end-column="57" />
+            <state vertical-scroll-proportion="0.25839415">
+              <caret line="223" column="59" selection-start-line="223" selection-start-column="59" selection-end-line="223" selection-end-column="59" />
               <folding>
-                <marker date="1461521899000" expanded="true" signature="11329:11356" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="11547:11571" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="11802:11823" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="11961:12396" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="12157:12345" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="17118:17276" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="17153:17205" placeholder="..." />
-                <marker date="1461521899000" expanded="true" signature="17153:17271" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="11025:11052" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="11243:11267" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="11498:11519" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="11657:12092" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="11853:12041" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="16754:16912" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="16789:16841" placeholder="..." />
+                <marker date="1462892182000" expanded="true" signature="16789:16907" placeholder="..." />
               </folding>
             </state>
           </provider>
@@ -210,106 +210,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="public" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="js" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="public" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="css" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="cloud" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="cloud" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="views" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="cloud" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="routes" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="austin-flood" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value=".idea" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -755,15 +655,15 @@
       <workItem from="1457407964472" duration="491000" />
       <workItem from="1457966094938" duration="49128000" />
       <workItem from="1460494135128" duration="11668000" />
-      <workItem from="1461510616122" duration="1309000" />
+      <workItem from="1461510616122" duration="4255000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="136340000" />
+    <option name="totallyTimeSpent" value="139286000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="809" extended-state="6" />
+    <frame x="0" y="23" width="1440" height="809" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -836,14 +736,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/cloud/views/layout.ejs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="23" column="76" selection-start-line="23" selection-start-column="76" selection-end-line="23" selection-end-column="76" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/cloud/views/test.ejs">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -875,14 +767,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="238" column="22" selection-start-line="238" selection-start-column="22" selection-end-line="238" selection-end-column="22" />
           <folding>
-            <marker date="1461521899000" expanded="true" signature="11329:11356" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11547:11571" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11802:11823" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11961:12396" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="12157:12345" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17118:17276" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17205" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17271" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11025:11052" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11243:11267" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11498:11519" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11657:12092" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11853:12041" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16754:16912" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16841" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16907" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -1045,14 +937,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1461521899000" expanded="true" signature="11329:11356" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11547:11571" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11802:11823" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11961:12396" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="12157:12345" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17118:17276" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17205" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17271" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11025:11052" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11243:11267" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11498:11519" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11657:12092" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11853:12041" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16754:16912" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16841" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16907" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -1107,14 +999,14 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="7" column="51" selection-start-line="7" selection-start-column="51" selection-end-line="7" selection-end-column="51" />
           <folding>
-            <marker date="1461521899000" expanded="true" signature="11329:11356" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11547:11571" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11802:11823" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11961:12396" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="12157:12345" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17118:17276" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17205" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17271" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11025:11052" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11243:11267" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11498:11519" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11657:12092" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11853:12041" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16754:16912" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16841" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16907" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -1255,10 +1147,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/.parse.local">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.09550562">
+          <caret line="4" column="6" selection-start-line="4" selection-start-column="6" selection-end-line="4" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/cloud/main.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="265" column="23" selection-start-line="265" selection-start-column="23" selection-end-line="265" selection-end-column="23" />
+          <caret line="189" column="36" selection-start-line="189" selection-start-column="36" selection-end-line="189" selection-end-column="36" />
           <folding>
             <element signature="e#15063#15164#0" expanded="false" />
           </folding>
@@ -1267,17 +1167,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/public/js/home.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5969101">
-          <caret line="58" column="57" selection-start-line="58" selection-start-column="57" selection-end-line="58" selection-end-column="57" />
+        <state vertical-scroll-proportion="0.25839415">
+          <caret line="223" column="59" selection-start-line="223" selection-start-column="59" selection-end-line="223" selection-end-column="59" />
           <folding>
-            <marker date="1461521899000" expanded="true" signature="11329:11356" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11547:11571" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11802:11823" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="11961:12396" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="12157:12345" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17118:17276" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17205" placeholder="..." />
-            <marker date="1461521899000" expanded="true" signature="17153:17271" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11025:11052" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11243:11267" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11498:11519" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11657:12092" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="11853:12041" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16754:16912" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16841" placeholder="..." />
+            <marker date="1462892182000" expanded="true" signature="16789:16907" placeholder="..." />
           </folding>
         </state>
       </provider>
